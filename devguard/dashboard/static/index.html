@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DevGuard — Forem & DEV.to Anti-Bot Panel</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="brand">
+                <span class="brand-icon">🛡️</span>
+                <h1 class="brand-name">DevGuard</h1>
+            </div>
+            
+            <nav class="nav-menu">
+                <a class="nav-item active" onclick="switchTab('overview')">
+                    <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+                    Overview
+                </a>
+                <a class="nav-item" onclick="switchTab('flagged')">
+                    <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+                    Flagged Users
+                </a>
+                <a class="nav-item" onclick="switchTab('learn')">
+                    <svg viewBox="0 0 24 24"><path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3z M5.89 12.55L12 15.89l6.11-3.34c.66-.36 1.1-.96 1.1-1.63V9L12 12.44 4.79 9v1.92c0 .67.44 1.27 1.1 1.63z"/></svg>
+                    Report Queue
+                </a>
+                <a class="nav-item" onclick="switchTab('rules')">
+                    <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+                    Rule Manager
+                </a>
+                <a class="nav-item" onclick="switchTab('whitelist')">
+                    <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+                    Whitelist
+                </a>
+                <a class="nav-item" onclick="switchTab('settings')">
+                    <svg viewBox="0 0 24 24"><path d="M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.23.09.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z"/></svg>
+                    Settings
+                </a>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <div class="service-status">
+                    <span class="status-dot"></span>
+                    <span>Service Online</span>
+                </div>
+                <span>DevGuard Engine v0.1.0</span>
+            </div>
+        </aside>
+
+        <!-- Main Workspace -->
+        <main class="main-content">
+            <!-- OVERVIEW TAB -->
+            <section id="tab-overview" class="tab-section active fade-in">
+                <div class="header-section">
+                    <h2 class="page-title">Overview Dashboard</h2>
+                    <button class="btn btn-primary" onclick="openManualScanModal()">🔍 Scan User</button>
+                </div>
+                
+                <div class="stats-grid">
+                    <div class="card stat-card">
+                        <div>
+                            <div class="stat-label">Total Audited</div>
+                            <div class="stat-value" id="stat-scanned">0</div>
+                        </div>
+                        <div class="stat-icon">👥</div>
+                    </div>
+                    <div class="card stat-card">
+                        <div>
+                            <div class="stat-label">Confirmed Bots</div>
+                            <div class="stat-value" id="stat-bots" style="color: var(--accent-red)">0</div>
+                        </div>
+                        <div class="stat-icon">🤖</div>
+                    </div>
+                    <div class="card stat-card">
+                        <div>
+                            <div class="stat-label">Suspicious Users</div>
+                            <div class="stat-value" id="stat-suspicious" style="color: var(--accent-orange)">0</div>
+                        </div>
+                        <div class="stat-icon">⚠️</div>
+                    </div>
+                    <div class="card stat-card">
+                        <div>
+                            <div class="stat-label">Enforced Suspensions</div>
+                            <div class="stat-value" id="stat-actions">0</div>
+                        </div>
+                        <div class="stat-icon">⚡</div>
+                    </div>
+                </div>
+                
+                <div class="card fade-in">
+                    <h3 class="card-title">Recent Real-Time Flags</h3>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>User</th>
+                                    <th>Verdict</th>
+                                    <th>Risk Score</th>
+                                    <th>Audit Time</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="overview-recent-table">
+                                <tr>
+                                    <td colspan="5" style="text-align: center; color: var(--color-text-sub)">Loading activity logs...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- FLAGGED USERS TAB -->
+            <section id="tab-flagged" class="tab-section fade-in">
+                <div class="header-section">
+                    <h2 class="page-title">Flagged Accounts</h2>
+                </div>
+                
+                <div class="card">
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Username</th>
+                                    <th>Risk Score</th>
+                                    <th>Verdict</th>
+                                    <th>Flags Count</th>
+                                    <th>Last Scanned</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="flagged-users-table">
+                                <tr>
+                                    <td colspan="6" style="text-align: center; color: var(--color-text-sub)">Loading flagged user data...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- LEARN / REPORT QUEUE TAB -->
+            <section id="tab-learn" class="tab-section fade-in">
+                <div class="header-section">
+                    <h2 class="page-title">Community Review Queue</h2>
+                </div>
+                
+                <div class="card">
+                    <h3 class="card-title">Pending Reports (Learn Mode)</h3>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Reported User</th>
+                                    <th>Reason</th>
+                                    <th>Reporter</th>
+                                    <th>Status</th>
+                                    <th>Report Date</th>
+                                    <th>Review</th>
+                                </tr>
+                            </thead>
+                            <tbody id="reports-table">
+                                <tr>
+                                    <td colspan="6" style="text-align: center; color: var(--color-text-sub)">No pending community reports.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- RULE MANAGER TAB -->
+            <section id="tab-rules" class="tab-section fade-in">
+                <div class="header-section">
+                    <h2 class="page-title">Custom Detection Rules</h2>
+                    <button class="btn btn-primary" onclick="openCreateRuleModal()">＋ New Rule</button>
+                </div>
+                
+                <div class="card">
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Rule Name</th>
+                                    <th>Pattern Type</th>
+                                    <th>Pattern</th>
+                                    <th>Description</th>
+                                    <th>Status</th>
+                                    <th>Delete</th>
+                                </tr>
+                            </thead>
+                            <tbody id="rules-table">
+                                <tr>
+                                    <td colspan="6" style="text-align: center; color: var(--color-text-sub)">No custom rules defined yet.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- WHITELIST TAB -->
+            <section id="tab-whitelist" class="tab-section fade-in">
+                <div class="header-section">
+                    <h2 class="page-title">Whitelist Management</h2>
+                    <button class="btn btn-primary" onclick="openAddWhitelistModal()">＋ Add User</button>
+                </div>
+                
+                <div class="card">
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Username</th>
+                                    <th>Reason</th>
+                                    <th>Whitelisted Since</th>
+                                    <th>Remove</th>
+                                </tr>
+                            </thead>
+                            <tbody id="whitelist-table">
+                                <tr>
+                                    <td colspan="4" style="text-align: center; color: var(--color-text-sub)">No whitelisted users.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SETTINGS TAB -->
+            <section id="tab-settings" class="tab-section fade-in">
+                <div class="header-section">
+                    <h2 class="page-title">System Settings</h2>
+                </div>
+                
+                <div class="card">
+                    <h3 class="card-title">Live Server Configuration</h3>
+                    <div id="settings-content">
+                        <p style="color: var(--color-text-sub)">Loading current server configurations...</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- MODAL 1: EVIDENCE VIEWER -->
+    <div class="modal-overlay" id="modal-evidence">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="evidence-modal-title">Detection Audit Logs</h3>
+                <button class="close-btn" onclick="closeModal('modal-evidence')">×</button>
+            </div>
+            <div class="modal-body" id="evidence-modal-body">
+                <!-- Injected via JavaScript -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('modal-evidence')">Dismiss</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 2: MANUAL SCAN -->
+    <div class="modal-overlay" id="modal-scan">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Scan User Profile</h3>
+                <button class="close-btn" onclick="closeModal('modal-scan')">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="scan-username">Enter DEV.to Username</label>
+                    <input type="text" id="scan-username" placeholder="e.g. janesmith">
+                </div>
+                <div id="scan-result-container" style="margin-top: 1rem;"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('modal-scan')">Close</button>
+                <button class="btn btn-primary" onclick="triggerManualScan()">Trigger Audit</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 3: ADD WHITELIST -->
+    <div class="modal-overlay" id="modal-whitelist">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Whitelist User</h3>
+                <button class="close-btn" onclick="closeModal('modal-whitelist')">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="whitelist-username">Username</label>
+                    <input type="text" id="whitelist-username" placeholder="e.g. brandambassador">
+                </div>
+                <div class="form-group">
+                    <label for="whitelist-reason">Reason for Whitelist</label>
+                    <input type="text" id="whitelist-reason" placeholder="e.g. Trusted content creator">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('modal-whitelist')">Cancel</button>
+                <button class="btn btn-primary" onclick="addWhitelistUser()">Whitelist</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 4: CREATE RULE -->
+    <div class="modal-overlay" id="modal-rule">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Create Custom Detection Rule</h3>
+                <button class="close-btn" onclick="closeModal('modal-rule')">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="rule-name">Unique Rule Identifier</label>
+                    <input type="text" id="rule-name" placeholder="e.g. spambot_pattern_crypto">
+                </div>
+                <div class="form-group">
+                    <label for="rule-type">Pattern Target</label>
+                    <select id="rule-type">
+                        <option value="username_regex">Username Regex</option>
+                        <option value="content_regex">Content/Comment Regex</option>
+                        <option value="ip_range">IP String Match</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="rule-pattern">Regex Pattern / String</label>
+                    <input type="text" id="rule-pattern" placeholder="e.g. \b(crypto_invest|profit_bot)\d+\b">
+                </div>
+                <div class="form-group">
+                    <label for="rule-description">Short Description</label>
+                    <input type="text" id="rule-description" placeholder="Flags usernames matching automated patterns">
+                </div>
+                <div id="rule-preview-container" style="margin-top: 1rem;"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('modal-rule')">Cancel</button>
+                <button class="btn btn-primary" onclick="previewRuleImpact()" style="background: var(--accent-cyan); box-shadow: 0 4px 14px var(--accent-cyan-glow)">Test Pattern</button>
+                <button class="btn btn-primary" onclick="submitCustomRule()">Create Rule</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 5: REPORT REVIEW -->
+    <div class="modal-overlay" id="modal-review">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="review-modal-title">Review Reported Account</h3>
+                <button class="close-btn" onclick="closeModal('modal-review')">×</button>
+            </div>
+            <div class="modal-body" id="review-modal-body">
+                <!-- Injected via JavaScript -->
+            </div>
+            <div class="modal-footer" id="review-modal-footer">
+                <!-- Injected via JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

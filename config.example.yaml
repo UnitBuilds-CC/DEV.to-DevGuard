@@ -1,0 +1,48 @@
+devguard:
+  # DEV.to / Forem API configuration
+  api:
+    base_url: "https://dev.to/api"
+    api_key: "YOUR_API_KEY_HERE"
+    rate_limit: 10  # Max requests per second
+
+  # Operational Mode: detect | execute | learn
+  mode: "detect"
+
+  # Risk thresholds (0.0 to 1.0)
+  thresholds:
+    suspicious: 0.4
+    likely_bot: 0.7
+    confirmed_bot: 0.9
+
+  # Detection layer weight multipliers (must sum to roughly 1.0 for normalized composite score)
+  weights:
+    content: 0.25
+    profile: 0.20
+    behavioral: 0.20
+    fingerprint: 0.20
+    ip_intel: 0.15
+
+  # Background polling intervals (in seconds)
+  service:
+    enabled: true
+    comment_scan_interval: 300    # Scan comments on latest articles every 5 minutes
+    follower_scan_interval: 900   # Scan followers list every 15 minutes
+
+  # IP intelligence configuration
+  ip_intel:
+    provider: "ip-api"  # ip-api | ipqualityscore (requires api_key)
+    api_key: ""         # Optional API key depending on provider
+
+  # Dashboard server settings
+  dashboard:
+    enabled: true
+    host: "127.0.0.1"
+    port: 8420
+    secret_key: "DEVGUARD_SECRET_KEY_CHANGE_ME"
+
+  # Automatic enforcement safety switches
+  execute:
+    enabled: false               # OFF by default
+    dry_run: true               # If true, only logs actions without actually suspending
+    max_actions_per_hour: 10    # Safety throttle limit for hourly automated actions
+    require_confirmation: true  # Require moderator confirm for suspicious users

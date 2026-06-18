@@ -1,0 +1,14 @@
+version: "3.8"
+
+services:
+  devguard:
+    build: .
+    container_name: devguard-anti-bot
+    ports:
+      - "8420:8420"
+    volumes:
+      - ./config.yaml:/app/config.yaml
+      - ./data:/app/data
+    environment:
+      - DEVGUARD_DB_URL=sqlite:///data/devguard.db
+    restart: unless-stopped
