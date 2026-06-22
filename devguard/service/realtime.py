@@ -3,12 +3,26 @@ from datetime import datetime
 from typing import Dict, Any, Optional
 from fastapi import APIRouter, Depends, BackgroundTasks, Request, HTTPException
 from sqlalchemy.orm import Session
+from pydantic import BaseModel
 
 from devguard.database import SessionLocal, get_db, Fingerprint, Rule, User
 from devguard.detection.engine import DetectionEngine
 from devguard.modes.detect import process_detection_result
 from devguard.modes.execute import ExecutionController
 from devguard.api import ForemClient, UsersAPI, CommentsAPI
+
+class CommentValidationRequest(BaseModel):
+    username: str
+    body: str
+    ip_address: Optional[str] = None
+    session_id: Optional[str] = None
+
+class UserValidationRequest(BaseModel):
+    username: str
+    name: str
+    email: str
+    ip_address: Optional[str] = None
+    session_id: Optional[str] = None
 
 logger = logging.getLogger("devguard.service.realtime")
 router = APIRouter(prefix="/api/realtime", tags=["realtime"])
@@ -152,3 +166,126 @@ async def receive_forem_event(
             )
 
     return {"status": "received"}
+
+
+@router.post("/validate-comment")
+async def validate_comment(
+    payload: CommentValidationRequest,
+    request: Request,
+    db: Session = Depends(get_db)
+):
+    """Synchronously validates comment body, author, IP, and browser fingerprint."""
+    config = getattr(request.app, "state_config", {})
+    
+    # 1. Fetch fingerprint telemetry if session_id is provided
+    fp_data = None
+    if payload.session_id:
+        fp_rec = db.query(Fingerprint).filter(Fingerprint.session_id == payload.session_id).order_by(Fingerprint.created_at.desc()).first()
+        if fp_rec:
+            fp_data = fp_rec.raw_data
+
+    # 2. Retrieve user profile (check DB cache or fetch from Forem API)
+    cached_user = db.query(User).filter(User.username == payload.username).first()
+    profile = {}
+    if cached_user:
+        profile = {
+            "username": cached_user.username,
+            "id": cached_user.id,
+            "name": cached_user.name,
+            "followers_count": cached_user.followers_count,
+            "following_count": cached_user.following_count,
+            "post_count": cached_user.post_count,
+            "comment_count": cached_user.comment_count,
+            "created_at": cached_user.joined_at.isoformat() if cached_user.joined_at else None
+        }
+    else:
+        api_config = config.get("api", {})
+        client = ForemClient(
+            base_url=api_config.get("base_url", "https://dev.to/api"),
+            api_key=api_config.get("api_key", ""),
+            rate_limit_per_sec=api_config.get("rate_limit", 10)
+        )
+        users_api = UsersAPI(client)
+        try:
+            profile = await users_api.get_user_profile_by_username(payload.username)
+        except Exception:
+            pass
+        finally:
+            await client.close()
+        
+        if not profile:
+            profile = {
+                "username": payload.username,
+                "id": None,
+                "created_at": datetime.utcnow().isoformat()
+            }
+
+    # 3. Run Detection Engine
+    engine = DetectionEngine(config)
+    custom_rules = db.query(Rule).filter(Rule.is_active == True).all()
+    
+    result = await engine.scan_user(
+        user_profile=profile,
+        comments=[{"body": payload.body}],
+        fingerprint_data=fp_data,
+        ip_address=payload.ip_address,
+        custom_rules=custom_rules
+    )
+
+    # 4. Cache verdict / user record
+    process_detection_result(db, None, result, profile)
+
+    return {
+        "verdict": result.verdict,
+        "risk_score": result.risk_score,
+        "is_bot": result.verdict == "confirmed_bot",
+        "flags": [f.model_dump() for f in result.flags]
+    }
+
+
+@router.post("/validate-user")
+async def validate_user(
+    payload: UserValidationRequest,
+    request: Request,
+    db: Session = Depends(get_db)
+):
+    """Synchronously validates user registration details, IP, and browser fingerprint."""
+    config = getattr(request.app, "state_config", {})
+    
+    # 1. Fetch fingerprint telemetry if session_id is provided
+    fp_data = None
+    if payload.session_id:
+        fp_rec = db.query(Fingerprint).filter(Fingerprint.session_id == payload.session_id).order_by(Fingerprint.created_at.desc()).first()
+        if fp_rec:
+            fp_data = fp_rec.raw_data
+
+    # 2. Mock profile dictionary for unregistered user
+    profile = {
+        "username": payload.username,
+        "name": payload.name,
+        "email": payload.email,
+        "id": None,
+        "created_at": datetime.utcnow().isoformat()
+    }
+
+    # 3. Run Detection Engine
+    engine = DetectionEngine(config)
+    custom_rules = db.query(Rule).filter(Rule.is_active == True).all()
+    
+    result = await engine.scan_user(
+        user_profile=profile,
+        comments=[],
+        fingerprint_data=fp_data,
+        ip_address=payload.ip_address,
+        custom_rules=custom_rules
+    )
+
+    # 4. Cache verdict / user record
+    process_detection_result(db, None, result, profile)
+
+    return {
+        "verdict": result.verdict,
+        "risk_score": result.risk_score,
+        "is_bot": result.verdict == "confirmed_bot",
+        "flags": [f.model_dump() for f in result.flags]
+    }

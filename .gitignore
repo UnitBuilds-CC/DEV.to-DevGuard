@@ -142,3 +142,4 @@ config.yaml
 data/
 *.log
 devguard.log
+forem-src/

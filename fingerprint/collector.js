@@ -6,6 +6,8 @@
             sid = 'dg_sess_' + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
             sessionStorage.setItem("dg_session_id", sid);
         }
+        // Sync to cookie so Rails can read it
+        document.cookie = "dg_session_id=" + sid + "; path=/; max-age=86400; SameSite=Lax";
         return sid;
     }
 

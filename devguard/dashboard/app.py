@@ -345,6 +345,9 @@ async def get_settings():
             safe_config["api"]["api_key"] = f"***{key[-4:]}" if len(key) > 4 else "***"
     return safe_config
 
+# Serve fingerprint collector JS file
+app.mount("/static", StaticFiles(directory="fingerprint"), name="fingerprint")
+
 # Serve frontend static files
 # Make sure this is registered last so it doesn't shadow API routes
 app.mount("/", StaticFiles(directory="devguard/dashboard/static", html=True), name="static")
