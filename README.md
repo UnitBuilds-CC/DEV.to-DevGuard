@@ -82,6 +82,57 @@ Add the following `<script>` tag to your layout template (usually in Rails `appl
 
 ---
 
+## Real-Time Validation API
+
+In addition to passive scanning, DevGuard provides synchronous APIs designed to be called directly within web framework model validations (e.g., Rails ActiveRecord validators) before transactions are committed.
+
+### 1. Validate Comment
+Synchronously scans comment content and matches it with the author's browser fingerprint telemetry.
+- **Endpoint**: `POST /api/realtime/validate-comment`
+- **Request Body**:
+  ```json
+  {
+    "username": "author_username",
+    "body": "Comment markdown text",
+    "ip_address": "1.2.3.4",
+    "session_id": "dg_sess_unique_token_from_cookie"
+  }
+  ```
+- **Response**:
+  ```json
+  {
+    "verdict": "clean | suspicious | likely_bot | confirmed_bot",
+    "risk_score": 0.15,
+    "is_bot": false,
+    "flags": []
+  }
+  ```
+
+### 2. Validate User
+Synchronously scans user registration fields and matches it with browser fingerprint telemetry before registration completes.
+- **Endpoint**: `POST /api/realtime/validate-user`
+- **Request Body**:
+  ```json
+  {
+    "username": "new_username",
+    "name": "Jane Doe",
+    "email": "jane@example.com",
+    "ip_address": "1.2.3.4",
+    "session_id": "dg_sess_unique_token_from_cookie"
+  }
+  ```
+- **Response**:
+  ```json
+  {
+    "verdict": "clean | suspicious | likely_bot | confirmed_bot",
+    "risk_score": 0.55,
+    "is_bot": false,
+    "flags": []
+  }
+  ```
+
+---
+
 ## CLI Usage
 
 DevGuard includes a convenient command line interface for administration tasks:
